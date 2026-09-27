@@ -63,7 +63,12 @@ class CommentItemBlock extends Block
         $html .= '<div class="jankx-comment-item__main">';
         $html .= '<div class="jankx-comment-item__bubble">';
         $html .= '<div class="jankx-comment-item__author">' . esc_html(get_comment_author($comment)) . '</div>';
-        $html .= '<div class="jankx-comment-item__content">' . wp_kses_post(wpautop($comment->comment_content)) . '</div>';
+        // Run through the core comment_text filter chain (wpautop,
+        // make_clickable, ...) so other extensions hooking comment_text —
+        // e.g. comment-media appending its attachment grid — work inside
+        // this layout too.
+        $content = apply_filters('comment_text', $comment->comment_content, $comment);
+        $html .= '<div class="jankx-comment-item__content">' . $content . '</div>';
         $html .= '</div>'; // .jankx-comment-item__bubble
 
         // Actions row: likes count (display only) · reply · relative time
