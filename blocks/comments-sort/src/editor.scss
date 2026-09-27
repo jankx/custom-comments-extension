@@ -1,0 +1,24 @@
+.editor-styles-wrapper .jcc-editor-sort {
+    display: flex;
+    justify-content: flex-end;
+
+    .jcc-editor-sort__pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border: 1px solid #dcdcde;
+        border-radius: 999px;
+        background: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        color: #1e1e1e;
+        cursor: default;
+    }
+
+    .jcc-editor-sort__caret {
+        color: #8c8f94;
+        font-size: 12px;
+        line-height: 1;
+    }
+}

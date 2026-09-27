@@ -1,0 +1,26 @@
+.editor-styles-wrapper .jcc-editor-comments {
+    border: 1px dashed #c3c4c7;
+    border-radius: 12px;
+    padding: 16px;
+    background: #fff;
+    position: relative;
+
+    .jcc-editor-comments__label {
+        position: absolute;
+        top: -10px;
+        left: 12px;
+        background: #fff;
+        padding: 0 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #8c8f94;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .block-editor-inner-blocks {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+}

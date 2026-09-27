@@ -1,0 +1,17 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "jankx/comments",
+    "title": "Bình luận",
+    "category": "jankx",
+    "icon": "admin-comments",
+    "description": "Layout bình luận Facebook-style: sắp xếp, form đăng và danh sách bình luận lồng nhau.",
+    "textdomain": "jankx",
+    "keywords": ["binh luan", "comment", "facebook", "thao luan", "danh gia"],
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "editorScript": "file:./build/index.tsx.js",
+    "editorStyle": "file:./build/index.tsx.css"
+}

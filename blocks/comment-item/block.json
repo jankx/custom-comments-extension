@@ -1,0 +1,53 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "jankx/comment-item",
+    "title": "Một bình luận",
+    "category": "jankx",
+    "icon": "format-chat",
+    "description": "Template cho một bình luận: avatar, nội dung, lượt thích, nút phản hồi và thời gian.",
+    "textdomain": "jankx",
+    "keywords": ["binh luan", "comment", "item", "phan hoi"],
+    "parent": ["jankx/comment-list"],
+    "usesContext": ["jankx/commentList"],
+    "attributes": {
+        "showAvatar": {
+            "type": "boolean",
+            "default": true
+        },
+        "avatarSize": {
+            "type": "number",
+            "default": 40
+        },
+        "showTime": {
+            "type": "boolean",
+            "default": true
+        },
+        "showLikes": {
+            "type": "boolean",
+            "default": true
+        },
+        "likesText": {
+            "type": "string",
+            "default": "%d lượt thích"
+        },
+        "showReply": {
+            "type": "boolean",
+            "default": true
+        },
+        "replyLabel": {
+            "type": "string",
+            "default": "Thỏa luận"
+        },
+        "replyPlaceholder": {
+            "type": "string",
+            "default": "Viết câu trả lời của bạn...",
+            "role": "content"
+        }
+    },
+    "supports": {
+        "html": false
+    },
+    "editorScript": "file:./build/index.tsx.js",
+    "editorStyle": "file:./build/index.tsx.css"
+}

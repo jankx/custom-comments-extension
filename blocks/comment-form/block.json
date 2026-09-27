@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "jankx/comment-form",
+    "title": "Form bình luận",
+    "category": "jankx",
+    "icon": "edit",
+    "description": "Ô nhập bình luận kiểu Facebook với nút Đăng.",
+    "textdomain": "jankx",
+    "keywords": ["form", "binh luan", "comment", "dang"],
+    "parent": ["jankx/comments"],
+    "attributes": {
+        "postId": {
+            "type": "number",
+            "default": 0
+        },
+        "placeholder": {
+            "type": "string",
+            "default": "",
+            "role": "content"
+        },
+        "submitText": {
+            "type": "string",
+            "default": "",
+            "role": "content"
+        },
+        "showAvatar": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "supports": {
+        "html": false,
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "editorScript": "file:./build/index.tsx.js",
+    "editorStyle": "file:./build/index.tsx.css"
+}

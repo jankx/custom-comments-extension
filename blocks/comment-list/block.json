@@ -1,0 +1,43 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "jankx/comment-list",
+    "title": "Danh sách bình luận",
+    "category": "jankx",
+    "icon": "list-view",
+    "description": "Hiển thị danh sách bình luận đã duyệt, có phân cấp theo phản hồi.",
+    "textdomain": "jankx",
+    "keywords": ["danh sach", "list", "binh luan", "comment"],
+    "parent": ["jankx/comments"],
+    "attributes": {
+        "postId": {
+            "type": "number",
+            "default": 0
+        },
+        "order": {
+            "type": "string",
+            "enum": ["newest", "oldest"],
+            "default": "newest"
+        },
+        "perPage": {
+            "type": "number",
+            "default": 0
+        },
+        "maxDepth": {
+            "type": "number",
+            "default": 5
+        }
+    },
+    "providesContext": {
+        "jankx/commentList": "postId"
+    },
+    "supports": {
+        "html": false,
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "editorScript": "file:./build/index.tsx.js",
+    "editorStyle": "file:./build/index.tsx.css"
+}

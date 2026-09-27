@@ -1,0 +1,28 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "jankx/comments-sort",
+    "title": "Sắp xếp bình luận",
+    "category": "jankx",
+    "icon": "sort",
+    "description": "Chọn thứ tự hiển thị bình luận: Mới nhất hoặc Cũ nhất.",
+    "textdomain": "jankx",
+    "keywords": ["sap xep", "sort", "moi nhat", "cu nhat"],
+    "parent": ["jankx/comments"],
+    "attributes": {
+        "order": {
+            "type": "string",
+            "enum": ["newest", "oldest"],
+            "default": "newest"
+        }
+    },
+    "supports": {
+        "html": false,
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "editorScript": "file:./build/index.tsx.js",
+    "editorStyle": "file:./build/index.tsx.css"
+}

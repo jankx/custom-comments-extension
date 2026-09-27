@@ -1,0 +1,61 @@
+.editor-styles-wrapper .jcc-editor-item {
+    display: flex;
+    gap: 10px;
+    padding: 6px 4px;
+
+    .jcc-editor-item__avatar {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #d8dcef;
+    }
+
+    .jcc-editor-item__main {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .jcc-editor-item__bubble {
+        display: inline-block;
+        background: #f0f2f5;
+        border-radius: 16px;
+        padding: 8px 14px;
+        max-width: 100%;
+    }
+
+    .jcc-editor-item__author {
+        font-size: 13px;
+        font-weight: 700;
+        color: #050505;
+        line-height: 1.3;
+    }
+
+    .jcc-editor-item__content {
+        font-size: 14px;
+        color: #050505;
+        line-height: 1.45;
+        margin-top: 2px;
+        word-wrap: break-word;
+    }
+
+    .jcc-editor-item__actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 5px;
+        padding-left: 6px;
+        font-size: 12px;
+    }
+
+    .jcc-editor-item__likes,
+    .jcc-editor-item__time {
+        color: #65676b;
+    }
+
+    .jcc-editor-item__reply {
+        color: #65676b;
+        font-weight: 700;
+        cursor: default;
+    }
+}
