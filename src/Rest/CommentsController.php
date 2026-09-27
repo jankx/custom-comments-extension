@@ -127,14 +127,15 @@ class CommentsController
         $range = CommentListRenderer::renderRange($postId, $attrs, $order, $offset, $perPage);
 
         return new WP_REST_Response([
-            'success'  => true,
-            'order'    => $range['order'],
-            'html'     => $range['html'],
-            'offset'   => $range['offset'],
-            'count'    => $range['count'],
-            'shown'    => $range['shown'],
-            'total'    => $range['total'],
-            'has_more' => $range['has_more'],
+            'success'       => true,
+            'order'         => $range['order'],
+            'html'          => $range['html'],
+            'offset'        => $range['offset'],
+            'count'         => $range['count'],
+            'shown'         => $range['shown'],
+            'total'         => $range['total'],
+            'has_more'      => $range['has_more'],
+            'comment_count' => $range['comment_count'],
         ]);
     }
 

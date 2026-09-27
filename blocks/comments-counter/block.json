@@ -1,0 +1,32 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "jankx/comments-counter",
+    "title": "Bộ đếm bình luận",
+    "category": "jankx",
+    "icon": "chart-bar",
+    "description": "Hiển thị tổng số bình luận của bài viết, tự cập nhật khi đăng/tải bình luận.",
+    "textdomain": "jankx",
+    "keywords": ["counter", "binh luan", "so binh luan", "comment count", "tong so"],
+    "parent": ["jankx/comments"],
+    "attributes": {
+        "postId": {
+            "type": "number",
+            "default": 0
+        },
+        "format": {
+            "type": "string",
+            "default": "%d bình luận",
+            "role": "content"
+        }
+    },
+    "supports": {
+        "html": false,
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "editorScript": "file:./build/index.tsx.js",
+    "editorStyle": "file:./build/index.tsx.css"
+}

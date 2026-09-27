@@ -130,8 +130,14 @@ class CommentListRenderer
         $offset = max(0, $offset);
 
         if ($postId <= 0) {
-            return self::emptyRange($order);
+            return array_merge(self::emptyRange($order), ['comment_count' => 0]);
         }
+
+        $commentCount = (int) get_comments([
+            'post_id' => $postId,
+            'status'  => 'approve',
+            'count'   => true,
+        ]);
 
         $flat = get_comments([
             'post_id' => $postId,
@@ -140,7 +146,7 @@ class CommentListRenderer
         ]);
 
         if (empty($flat)) {
-            return self::emptyRange($order);
+            return array_merge(self::emptyRange($order), ['comment_count' => $commentCount]);
         }
 
         // Group by parent. Top level keeps the query order (newest/oldest),
@@ -172,13 +178,14 @@ class CommentListRenderer
         $shown = $offset + count($slice);
 
         return [
-            'html'     => $html,
-            'total'    => $total,
-            'shown'    => $shown,
-            'count'    => count($slice),
-            'offset'   => $offset,
-            'has_more' => $shown < $total,
-            'order'    => $order,
+            'html'          => $html,
+            'total'         => $total,
+            'shown'         => $shown,
+            'count'         => count($slice),
+            'offset'        => $offset,
+            'has_more'      => $shown < $total,
+            'order'         => $order,
+            'comment_count' => $commentCount,
         ];
     }
 

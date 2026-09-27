@@ -105,6 +105,32 @@
     }
 
     /**
+     * Keep every jankx/comment-count block in sync with the real total
+     * (all approved comments, any depth).
+     */
+    function renderCommentCount(el, value) {
+        var format = el.getAttribute('data-format') || '%d';
+        el.setAttribute('data-count', String(value));
+        el.textContent = format.replace('%d', String(value));
+    }
+
+    function updateCommentCount(value) {
+        if (typeof value !== 'number' || isNaN(value)) {
+            return;
+        }
+        document.querySelectorAll('[data-jcc-count]').forEach(function (el) {
+            renderCommentCount(el, value);
+        });
+    }
+
+    function bumpCommentCount(delta) {
+        document.querySelectorAll('[data-jcc-count]').forEach(function (el) {
+            var current = parseInt(el.getAttribute('data-count'), 10) || 0;
+            renderCommentCount(el, current + delta);
+        });
+    }
+
+    /**
      * Load the next page of root comments and APPEND them to the list.
      * Children travel inside their root node, so replies always land inside
      * their parent's __children container.
@@ -133,6 +159,7 @@
                     inner.insertAdjacentHTML('beforeend', data.html);
                 }
                 syncPagination(list, data);
+                updateCommentCount(data.comment_count);
                 button.textContent = label;
             })
             .catch(function () {
@@ -165,6 +192,7 @@
                             t('empty', 'Chưa có bình luận nào.') +
                             '</p>';
                     syncPagination(list, data);
+                    updateCommentCount(data.comment_count);
                 }
             })
             .catch(function () {
@@ -348,6 +376,7 @@
                     );
                     if (children) {
                         children.insertAdjacentHTML('beforeend', data.html);
+                        bumpCommentCount(1);
                         return;
                     }
                 }

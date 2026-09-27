@@ -11,6 +11,16 @@
     position: relative;
 }
 
+/* ------------------------------------------------------------ counter */
+
+.jankx-comments-counter {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--jcx-text);
+    margin-bottom: 12px;
+}
+
 /* ---------------------------------------------------------------- sort */
 
 .jankx-comments-sort {

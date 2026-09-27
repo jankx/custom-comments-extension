@@ -2,6 +2,7 @@
 namespace Jankx\Extensions\CustomComments;
 
 use Jankx\Extensions\AbstractExtension;
+use Jankx\Extensions\CustomComments\Blocks\CommentsCounterBlock;
 use Jankx\Extensions\CustomComments\Blocks\CommentFormBlock;
 use Jankx\Extensions\CustomComments\Blocks\CommentItemBlock;
 use Jankx\Extensions\CustomComments\Blocks\CommentListBlock;
@@ -69,6 +70,7 @@ class CustomCommentsExtension extends AbstractExtension
         $blockClasses = [
             'comments'      => CommentsBlock::class,
             'comments-sort' => CommentsSortBlock::class,
+            'comments-counter' => CommentsCounterBlock::class,
             'comment-form'  => CommentFormBlock::class,
             'comment-list'  => CommentListBlock::class,
             'comment-item'  => CommentItemBlock::class,
