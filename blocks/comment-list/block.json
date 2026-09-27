@@ -19,9 +19,13 @@
             "enum": ["newest", "oldest"],
             "default": "newest"
         },
-        "perPage": {
+        "initialCount": {
             "type": "number",
-            "default": 0
+            "default": 5
+        },
+        "loadMoreCount": {
+            "type": "number",
+            "default": 10
         },
         "maxDepth": {
             "type": "number",

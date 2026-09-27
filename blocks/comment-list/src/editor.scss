@@ -21,4 +21,18 @@
     .block-editor-inner-blocks .block-list-appender {
         display: none;
     }
+
+    .jcc-editor-list__more {
+        display: block;
+        width: 100%;
+        margin-top: 12px;
+        padding: 9px 16px;
+        border: 1px dashed #dcdcde;
+        border-radius: 999px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: #8c8f94;
+        box-sizing: border-box;
+    }
 }

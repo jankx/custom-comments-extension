@@ -145,6 +145,7 @@ class CustomCommentsExtension extends AbstractExtension
             'nonce'   => wp_create_nonce('wp_rest'),
             'i18n'    => [
                 'submitting' => __('Đang gửi...', 'jankx'),
+                'loading'    => __('Đang tải...', 'jankx'),
                 'posted'     => __('Đã đăng ✓', 'jankx'),
                 'success'    => __('Bình luận của bạn đã được đăng.', 'jankx'),
                 'pending'    => __('Bình luận của bạn đang chờ kiểm duyệt.', 'jankx'),

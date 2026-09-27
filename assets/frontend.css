@@ -188,6 +188,37 @@
     margin: 8px 0;
 }
 
+/* ----------------------------------------------------------- load more */
+
+.jankx-comment-list__more {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    padding: 9px 16px;
+    background: none;
+    border: 1px solid var(--jcx-line);
+    border-radius: 999px;
+    color: var(--jcx-text);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.jankx-comment-list__more:hover {
+    background: var(--jcx-bg);
+}
+
+.jankx-comment-list__more[hidden] {
+    display: none;
+}
+
+.jankx-comment-list__more:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
 .jankx-comment-item {
     display: flex;
     align-items: flex-start;

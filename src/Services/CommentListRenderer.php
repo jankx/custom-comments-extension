@@ -16,7 +16,8 @@ class CommentListRenderer
     {
         return [
             'order'            => 'newest',
-            'perPage'          => 0,
+            'initialCount'     => 5,
+            'loadMoreCount'    => 10,
             'maxDepth'         => 5,
             'showAvatar'       => true,
             'avatarSize'       => 40,
@@ -70,7 +71,8 @@ class CommentListRenderer
             'order'            => in_array($raw['order'] ?? '', ['newest', 'oldest'], true)
                 ? $raw['order']
                 : $defaults['order'],
-            'perPage'          => max(0, (int) ($raw['perPage'] ?? $defaults['perPage'])),
+            'initialCount'     => min(50, max(1, (int) ($raw['initialCount'] ?? $defaults['initialCount']))),
+            'loadMoreCount'    => min(50, max(1, (int) ($raw['loadMoreCount'] ?? $defaults['loadMoreCount']))),
             'maxDepth'         => min(10, max(1, (int) ($raw['maxDepth'] ?? $defaults['maxDepth']))),
             'showAvatar'       => (bool) ($raw['showAvatar'] ?? $defaults['showAvatar']),
             'avatarSize'       => min(128, max(16, (int) ($raw['avatarSize'] ?? $defaults['avatarSize']))),
@@ -102,19 +104,33 @@ class CommentListRenderer
     }
 
     /**
-     * Build the full list HTML for a post.
+     * Render a slice of top-level (root) comments with their reply subtrees.
+     *
+     * Pagination counts ROOTS only: the first page shows attrs.initialCount
+     * roots, "load more" appends attrs.loadMoreCount roots per request.
+     * Children travel inside their root node, so appended HTML always lands
+     * in the right comment tree.
      *
      * @param int         $postId
      * @param array       $attrs  Raw attributes (sanitized internally)
      * @param string|null $order  newest|oldest — overrides attrs/GET
+     * @param int         $offset Number of roots already shown
+     * @param int|null    $limit  Roots to take (null = all remaining)
+     * @return array{html: string, total: int, shown: int, count: int, offset: int, has_more: bool, order: string}
      */
-    public static function render(int $postId, array $attrs = [], ?string $order = null): string
-    {
+    public static function renderRange(
+        int $postId,
+        array $attrs = [],
+        ?string $order = null,
+        int $offset = 0,
+        ?int $limit = null
+    ): array {
         $attrs = self::sanitizeRenderAttributes($attrs);
         $order = in_array($order, ['newest', 'oldest'], true) ? $order : self::resolveOrder($attrs);
+        $offset = max(0, $offset);
 
         if ($postId <= 0) {
-            return '';
+            return self::emptyRange($order);
         }
 
         $flat = get_comments([
@@ -124,7 +140,7 @@ class CommentListRenderer
         ]);
 
         if (empty($flat)) {
-            return '';
+            return self::emptyRange($order);
         }
 
         // Group by parent. Top level keeps the query order (newest/oldest),
@@ -144,16 +160,39 @@ class CommentListRenderer
         }
 
         $roots = $byParent[0] ?? [];
-        if ($attrs['perPage'] > 0) {
-            $roots = array_slice($roots, 0, $attrs['perPage']);
-        }
+        $total = count($roots);
+
+        $slice = array_slice($roots, $offset, $limit === null ? null : max(0, $limit));
 
         $html = '';
-        foreach ($roots as $root) {
+        foreach ($slice as $root) {
             $html .= self::renderNode($root, $byParent, $attrs, 1);
         }
 
-        return $html;
+        $shown = $offset + count($slice);
+
+        return [
+            'html'     => $html,
+            'total'    => $total,
+            'shown'    => $shown,
+            'count'    => count($slice),
+            'offset'   => $offset,
+            'has_more' => $shown < $total,
+            'order'    => $order,
+        ];
+    }
+
+    protected static function emptyRange(string $order): array
+    {
+        return [
+            'html'     => '',
+            'total'    => 0,
+            'shown'    => 0,
+            'count'    => 0,
+            'offset'   => 0,
+            'has_more' => false,
+            'order'    => $order,
+        ];
     }
 
     protected static function renderNode(\WP_Comment $comment, array $byParent, array $attrs, int $level): string

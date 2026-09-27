@@ -60,13 +60,34 @@
         return list ? list.querySelector('.jankx-comment-list__inner') : null;
     }
 
-    function refreshList() {
-        var list = getList();
-        var inner = getListInner(list);
-        if (!list || !inner) {
-            return Promise.resolve();
-        }
+    function getMoreButton(list) {
+        return list ? list.querySelector('[data-jcc-more]') : null;
+    }
 
+    /**
+     * Sync pagination state (shown/total/has_more) from a REST response and
+     * show/hide the "Hiển thị thêm bình luận" button accordingly.
+     */
+    function syncPagination(list, data) {
+        if (!list || !data) {
+            return;
+        }
+        if (typeof data.shown === 'number') {
+            list.setAttribute('data-shown', String(data.shown));
+        }
+        if (typeof data.total === 'number') {
+            list.setAttribute('data-total', String(data.total));
+        }
+        if (data.order) {
+            list.setAttribute('data-order', data.order);
+        }
+        var button = getMoreButton(list);
+        if (button) {
+            button.hidden = !data.has_more;
+        }
+    }
+
+    function fetchRange(list, offset, perPage) {
         var attrs = {};
         try {
             attrs = JSON.parse(list.getAttribute('data-attrs') || '{}');
@@ -74,13 +95,68 @@
             attrs = {};
         }
 
-        list.classList.add('is-loading');
-
         return request('GET', {
             post_id: parseInt(list.getAttribute('data-post-id'), 10) || 0,
             order: list.getAttribute('data-order') || 'newest',
             attrs: JSON.stringify(attrs),
-        })
+            offset: offset,
+            per_page: perPage,
+        });
+    }
+
+    /**
+     * Load the next page of root comments and APPEND them to the list.
+     * Children travel inside their root node, so replies always land inside
+     * their parent's __children container.
+     */
+    function loadMore(button) {
+        var list = getList();
+        var inner = getListInner(list);
+        if (!list || !inner || button.disabled) {
+            return;
+        }
+
+        var offset = parseInt(list.getAttribute('data-shown'), 10) || 0;
+        var perPage = parseInt(list.getAttribute('data-load-more'), 10) || 10;
+        var label = button.getAttribute('data-jcc-label') || button.textContent;
+        button.setAttribute('data-jcc-label', label);
+        button.disabled = true;
+        button.textContent = t('loading', 'Đang tải...');
+
+        fetchRange(list, offset, perPage)
+            .then(function (data) {
+                if (!data || !data.success) {
+                    button.textContent = label;
+                    return;
+                }
+                if (data.html) {
+                    inner.insertAdjacentHTML('beforeend', data.html);
+                }
+                syncPagination(list, data);
+                button.textContent = label;
+            })
+            .catch(function () {
+                button.textContent = label;
+            })
+            .then(function () {
+                button.disabled = false;
+            });
+    }
+
+    /**
+     * Reset to the first page (used on sort change and after posting).
+     */
+    function refreshList() {
+        var list = getList();
+        var inner = getListInner(list);
+        if (!list || !inner) {
+            return Promise.resolve();
+        }
+
+        var initial = parseInt(list.getAttribute('data-initial'), 10) || 5;
+        list.classList.add('is-loading');
+
+        return fetchRange(list, 0, initial)
             .then(function (data) {
                 if (data && data.success) {
                     inner.innerHTML =
@@ -88,9 +164,7 @@
                         '<p class="jankx-comment-list__empty">' +
                             t('empty', 'Chưa có bình luận nào.') +
                             '</p>';
-                    if (data.order) {
-                        list.setAttribute('data-order', data.order);
-                    }
+                    syncPagination(list, data);
                 }
             })
             .catch(function () {
@@ -194,6 +268,33 @@
             ? parseInt(form.getAttribute('data-parent') || '0', 10)
             : 0;
 
+        var attrs = {};
+        try {
+            attrs = JSON.parse(
+                (list && list.getAttribute('data-attrs')) || '{}'
+            );
+        } catch (e) {
+            attrs = {};
+        }
+
+        // Nesting level of the reply (used to render the ready-to-append
+        // node returned by the API): node style --jcx-level is level-1, so
+        // child level = parent style + 2.
+        var level = 1;
+        var parentNode = null;
+        if (parent > 0 && list) {
+            parentNode = list.querySelector(
+                '[data-comment-id="' + parent + '"]'
+            );
+            if (parentNode) {
+                level =
+                    (parseInt(
+                        parentNode.style.getPropertyValue('--jcx-level'),
+                        10
+                    ) || 0) + 2;
+            }
+        }
+
         setBusy(form, true);
 
         request('POST', {
@@ -202,6 +303,8 @@
             parent: parent,
             author: fields.author || '',
             email: fields.email || '',
+            attrs: JSON.stringify(attrs),
+            level: level,
         })
             .then(function (data) {
                 if (!data || !data.success) {
@@ -228,11 +331,30 @@
                     textarea.style.height = '';
                 }
 
-                return refreshList().then(function () {
-                    if (isReply) {
-                        hideReplyForm(form);
+                if (isReply) {
+                    hideReplyForm(form);
+                }
+
+                // Awaiting moderation: nothing is visible yet.
+                if (data.pending) {
+                    return;
+                }
+
+                // Approved reply: append the node into its parent's children
+                // container — loaded pages stay untouched.
+                if (parent > 0 && parentNode && data.html) {
+                    var children = parentNode.querySelector(
+                        '.jankx-comment-item__children'
+                    );
+                    if (children) {
+                        children.insertAdjacentHTML('beforeend', data.html);
+                        return;
                     }
-                });
+                }
+
+                // New root comment (or parent not visible): reset to page one
+                // so the newest comment shows immediately.
+                return refreshList();
             })
             .catch(function () {
                 showMessage(
@@ -314,6 +436,12 @@
         });
 
         document.addEventListener('click', function (event) {
+            var more = event.target.closest('[data-jcc-more]');
+            if (more) {
+                event.preventDefault();
+                loadMore(more);
+                return;
+            }
             var toggle = event.target.closest('[data-jcc-toggle-reply]');
             if (toggle) {
                 event.preventDefault();

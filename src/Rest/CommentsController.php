@@ -1,6 +1,7 @@
 <?php
 namespace Jankx\Extensions\CustomComments\Rest;
 
+use Jankx\Extensions\CustomComments\Blocks\CommentItemBlock;
 use Jankx\Extensions\CustomComments\Services\CommentListRenderer;
 use WP_Error;
 use WP_REST_Request;
@@ -42,6 +43,16 @@ class CommentsController
                     'attrs' => [
                         'required' => false,
                     ],
+                    'offset' => [
+                        'required' => false,
+                        'type'     => 'integer',
+                        'default'  => 0,
+                    ],
+                    'per_page' => [
+                        'required' => false,
+                        'type'     => 'integer',
+                        'default'  => 0,
+                    ],
                 ],
             ],
             [
@@ -54,6 +65,10 @@ class CommentsController
                     'parent'  => ['required' => false, 'type' => 'integer', 'default' => 0],
                     'author'  => ['required' => false, 'type' => 'string'],
                     'email'   => ['required' => false, 'type' => 'string'],
+                    // JSON-encoded list attributes for rendering the new
+                    // comment node (decoded manually, see decodeAttrs()).
+                    'attrs'   => ['required' => false],
+                    'level'   => ['required' => false, 'type' => 'integer', 'default' => 1],
                 ],
             ],
         ]);
@@ -72,24 +87,54 @@ class CommentsController
         return (bool) wp_verify_nonce($nonce, 'wp_rest');
     }
 
+    /**
+     * Render/refresh a slice of the list.
+     *
+     * - offset=0          → first page (limit = attrs.initialCount)
+     * - offset>0          → load-more slice (limit = per_page || attrs.loadMoreCount)
+     *
+     * The response always carries the pagination state so the client knows
+     * whether more comments remain: shown / total / has_more.
+     */
+    /**
+     * Query/body params carry attrs as a JSON string (query strings cannot
+     * be schema-typed as object — no auto decode).
+     */
+    protected function decodeAttrs($value): array
+    {
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+        return is_array($value) ? $value : [];
+    }
+
     public function getComments(WP_REST_Request $request): WP_REST_Response
     {
         $postId = (int) $request->get_param('post_id');
-        $attrs = $request->get_param('attrs');
-        if (is_string($attrs)) {
-            $decoded = json_decode($attrs, true);
-            $attrs = is_array($decoded) ? $decoded : [];
-        }
-        $attrs = is_array($attrs) ? $attrs : [];
+        $attrs = CommentListRenderer::sanitizeRenderAttributes(
+            $this->decodeAttrs($request->get_param('attrs'))
+        );
+
         $order = $request->get_param('order');
-        $order = in_array($order, ['newest', 'oldest'], true)
-            ? $order
-            : CommentListRenderer::resolveOrder($attrs);
+        $order = in_array($order, ['newest', 'oldest'], true) ? $order : null;
+
+        $offset = max(0, (int) $request->get_param('offset'));
+        $perPage = max(0, (int) $request->get_param('per_page'));
+        if ($perPage <= 0) {
+            $perPage = $offset > 0 ? $attrs['loadMoreCount'] : $attrs['initialCount'];
+        }
+
+        $range = CommentListRenderer::renderRange($postId, $attrs, $order, $offset, $perPage);
 
         return new WP_REST_Response([
-            'success' => true,
-            'order'   => $order,
-            'html'    => CommentListRenderer::render($postId, $attrs, $order),
+            'success'  => true,
+            'order'    => $range['order'],
+            'html'     => $range['html'],
+            'offset'   => $range['offset'],
+            'count'    => $range['count'],
+            'shown'    => $range['shown'],
+            'total'    => $range['total'],
+            'has_more' => $range['has_more'],
         ]);
     }
 
@@ -177,13 +222,27 @@ class CommentsController
         /** @var \WP_Comment $submission */
         $pending = (string) $submission->comment_approved !== '1';
 
-        return new WP_REST_Response([
+        $response = [
             'success' => true,
             'id'      => (int) $submission->comment_ID,
+            'parent'  => $parent,
             'pending' => $pending,
             'message' => $pending
                 ? __('Bình luận của bạn đang chờ kiểm duyệt.', 'jankx')
                 : __('Bình luận đã được đăng.', 'jankx'),
-        ], 201);
+        ];
+
+        // Approved replies come back as a ready-to-append node so the client
+        // can drop them into the parent's children container without a full
+        // list refresh (keeps the loaded pages intact).
+        if (!$pending) {
+            $attrs = CommentListRenderer::sanitizeRenderAttributes(
+                $this->decodeAttrs($request->get_param('attrs'))
+            );
+            $level = max(1, (int) $request->get_param('level'));
+            $response['html'] = CommentItemBlock::renderComment($submission, $attrs, $level);
+        }
+
+        return new WP_REST_Response($response, 201);
     }
 }

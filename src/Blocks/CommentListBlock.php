@@ -7,10 +7,11 @@ use Jankx\Gutenberg\Block;
 /**
  * jankx/comment-list — renders the threaded comment list.
  *
- * Merges the list attributes with the item attributes taken from its inner
- * jankx/comment-item template block, then delegates to CommentListRenderer
- * (shared with the REST refresh endpoint). The frontend script replaces the
- * inner HTML of the wrapper when sorting / after posting a comment.
+ * First page shows attrs.initialCount root comments (default 5) in the
+ * active sort order; the "Hiển thị thêm bình luận" button loads
+ * attrs.loadMoreCount more roots per request through the REST endpoint and
+ * appends them (children travel inside their root node). The frontend script
+ * swaps the inner HTML when sorting / after posting a comment.
  */
 class CommentListBlock extends Block
 {
@@ -24,24 +25,39 @@ class CommentListBlock extends Block
         }
 
         $attrs = $this->mergeAttributes($attributes, $block);
-        $order = CommentListRenderer::resolveOrder($attrs);
+        $range = CommentListRenderer::renderRange($postId, $attrs, null, 0, $attrs['initialCount']);
 
         $wrapper = get_block_wrapper_attributes([
             'class' => 'jankx-comment-list ' . CommentListRenderer::guestClass(),
             'data-jcc-list' => '',
             'data-post-id' => $postId,
-            'data-order' => $order,
+            'data-order' => $range['order'],
+            'data-shown' => $range['shown'],
+            'data-total' => $range['total'],
+            'data-initial' => $attrs['initialCount'],
+            'data-load-more' => $attrs['loadMoreCount'],
             'data-attrs' => wp_json_encode($attrs),
         ]);
 
-        $html = CommentListRenderer::render($postId, $attrs, $order);
-        if ($html === '') {
-            $html = '<p class="jankx-comment-list__empty">'
+        $inner = $range['html'];
+        if ($inner === '') {
+            $inner = '<p class="jankx-comment-list__empty">'
                 . esc_html__('Chưa có bình luận nào. Hãy là người đầu tiên bình luận!', 'jankx')
                 . '</p>';
         }
 
-        return sprintf('<div %s><div class="jankx-comment-list__inner">%s</div></div>', $wrapper, $html);
+        $more = sprintf(
+            '<button type="button" class="jankx-comment-list__more" data-jcc-more%s>%s</button>',
+            $range['has_more'] ? '' : ' hidden',
+            esc_html__('Hiển thị thêm bình luận', 'jankx')
+        );
+
+        return sprintf(
+            '<div %s><div class="jankx-comment-list__inner">%s</div>%s</div>',
+            $wrapper,
+            $inner,
+            $more
+        );
     }
 
     protected function mergeAttributes(array $attributes, $block): array

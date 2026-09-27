@@ -43,13 +43,27 @@ function Edit({ attributes, setAttributes }) {
                     />
                     <RangeControl
                         label={__(
-                            'Số bình luận gốc mỗi trang (0 = tất cả)',
+                            'Số bình luận hiển thị ban đầu',
                             'jankx'
                         )}
-                        value={attributes.perPage}
-                        min={0}
+                        value={attributes.initialCount}
+                        min={1}
                         max={50}
-                        onChange={(value) => setAttributes({ perPage: value || 0 })}
+                        onChange={(value) =>
+                            setAttributes({ initialCount: value || 5 })
+                        }
+                    />
+                    <RangeControl
+                        label={__(
+                            'Số bình luận mỗi lần tải thêm',
+                            'jankx'
+                        )}
+                        value={attributes.loadMoreCount}
+                        min={1}
+                        max={50}
+                        onChange={(value) =>
+                            setAttributes({ loadMoreCount: value || 10 })
+                        }
                     />
                     <RangeControl
                         label={__('Độ sâu phản hồi tối đa', 'jankx')}
@@ -68,6 +82,9 @@ function Edit({ attributes, setAttributes }) {
                     {__('Danh sách bình luận', 'jankx')}
                 </span>
                 <InnerBlocks template={ITEM_TEMPLATE} templateLock="all" />
+                <span className="jcc-editor-list__more">
+                    {__('Hiển thị thêm bình luận', 'jankx')}
+                </span>
             </div>
         </>
     );
