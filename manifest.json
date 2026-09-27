@@ -4,7 +4,7 @@
     "description": "Bộ block Gutenberg `jankx/comments` cho layout bình luận kiểu Facebook: sort, form đăng, danh sách threaded với avatar/tương tác/lượt thích.",
     "author": "Jankx",
     "extension_id": "custom-comments",
-    "context": ["frontend", "rest"],
+    "context": ["admin", "frontend", "rest"],
     "caller": {
         "file": "CustomCommentsExtension.php",
         "class": "Jankx\\Extensions\\CustomComments\\CustomCommentsExtension",
